@@ -20,7 +20,8 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 
 	c, err := new(websocket.Upgrader).Upgrade(w, r, nil)
 	if err != nil {
-		panic(err)
+		mylog.Println("upgrade error:", err)
+		return
 	}
 	defer c.Close()
 
