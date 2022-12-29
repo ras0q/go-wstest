@@ -13,6 +13,7 @@ make
 - `app` : Websocketサーバーを起動するコマンド
 - `wscat` : Websocketサーバーと対話形式で通信を行うコマンド
   - `app`を実行後、別のターミナルで実行する必要があります。
+  - `go install github.com/ras0q/go-wstest/wscat@latest`でグローバル環境にインストールすることもできます。
 
 ### Test
 
