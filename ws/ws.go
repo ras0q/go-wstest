@@ -2,27 +2,38 @@ package ws
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/gorilla/websocket"
 )
 
-func Serve(w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{}
+var latestClientID = atomic.Int64{}
 
-	c, err := upgrader.Upgrade(w, r, nil)
+func Serve(w http.ResponseWriter, r *http.Request) {
+	mylog := log.Default()
+	mylog.SetPrefix(fmt.Sprintf("client%d: ", latestClientID.Add(1)))
+
+	mylog.Println("connected")
+	defer mylog.Println("disconnected")
+
+	c, err := new(websocket.Upgrader).Upgrade(w, r, nil)
 	if err != nil {
 		panic(err)
 	}
+	defer c.Close()
 
-	go func() {
-		for {
-			_, msg, err := c.ReadMessage()
-			if err != nil {
-				panic(err)
-			}
-
-			c.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("You said: %s", msg)))
+	for {
+		_, msg, err := c.ReadMessage()
+		if err != nil {
+			mylog.Println("read error:", err)
+			break
 		}
-	}()
+
+		if err := c.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("You said: %s", msg))); err != nil {
+			mylog.Println("write error:", err)
+			break
+		}
+	}
 }
