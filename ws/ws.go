@@ -12,8 +12,9 @@ import (
 var latestClientID = atomic.Int64{}
 
 func Serve(w http.ResponseWriter, r *http.Request) {
+	clientID := latestClientID.Add(1)
 	mylog := log.Default()
-	mylog.SetPrefix(fmt.Sprintf("client%d: ", latestClientID.Add(1)))
+	mylog.SetPrefix(fmt.Sprintf("client%d: ", clientID))
 
 	mylog.Println("connected")
 	defer mylog.Println("disconnected")
