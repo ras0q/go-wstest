@@ -18,18 +18,29 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer c.Close()
 
-	for {
+	// サーバーからのメッセージを非同期で受信する
+	go func() {
+		fmt.Printf("Connected to %s\n", os.Args[1])
 		fmt.Print("> ")
+
+		for {
+			_, msg, err := c.ReadMessage()
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Print("\r")           // 最終行の"> "を消す
+			fmt.Printf("< %s\n", msg) // 受信したメッセージを表示
+			fmt.Print("> ")           // 最終行に"> "を表示
+		}
+	}()
+
+	// 標準入力からメッセージを送信する
+	for {
 		var msg []byte
 		fmt.Scanln(&msg)
 		c.WriteMessage(websocket.TextMessage, msg)
-
-		_, msg, err = c.ReadMessage()
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("< %s\n", msg)
 	}
 }
